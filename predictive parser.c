@@ -4,7 +4,6 @@
 char stack[50];
 int top = -1;
 
-/* Push string into stack */
 void push(char str[]) {
     for (int i = strlen(str) - 1; i >= 0; i--) {
         if (str[i] != 'e')
@@ -22,22 +21,22 @@ void displayStack() {
         printf("%c", stack[i]);
 }
 
-void displayInput(char input[], int pos) {
+void displayInput(char input[]) {
     printf("\t");
-    for (int i = pos; input[i] != '\0'; i++)
+    for (int i = 0; input[i] != '\0'; i++)
         printf("%c", input[i]);
 }
 
 int main() {
 
     char input[50];
-    char table[5][6][10] = {
 
-        {"TH", "$", "TH", "$", "TH", "$"},   // E
-        {"+TH", "$", "e", "e", "$", "e"},    // H
-        {"FU", "$", "FU", "$", "FU", "$"},   // T
-        {"e", "*FU", "e", "e", "$", "e"},    // U
-        {"$", "$", "(E)", "$", "i", "$"}     // F
+    char table[5][6][10] = {
+        {"$", "$", "TH", "$", "TH", "$"},
+        {"+TH", "$", "e", "e", "$", "e"},
+        {"$", "$", "FU", "$", "FU", "$"},
+        {"e", "*FU", "e", "e", "$", "e"},
+        {"$", "$", "(E)", "$", "i", "$"}
     };
 
     char nonTerminals[] = {'E', 'H', 'T', 'U', 'F'};
@@ -55,12 +54,11 @@ int main() {
     while (top >= 0) {
 
         displayStack();
-        displayInput(input, i);
+        displayInput(input);
 
         char st = stack[top];
         char in = input[i];
 
-        /* Convert identifiers to i */
         if ((in >= 'a' && in <= 'z') ||
             (in >= 'A' && in <= 'Z'))
             in = 'i';
@@ -89,7 +87,7 @@ int main() {
         else if (in == '$') col = 5;
 
         if (row == -1 || col == -1 || strcmp(table[row][col], "$") == 0) {
-            printf("\nSyntax Error\n");
+            printf("\nGiven string is not accepted\n");
             return 0;
         }
 
@@ -98,16 +96,12 @@ int main() {
         push(table[row][col]);
 
         printf("\t%c -> %s\n", st, table[row][col]);
-
-        if (stack[top] == '$' && input[i] == '$')
-            break;
     }
 
-    if (stack[top] == '$' && input[i] == '$')
+    if (top == -1)
         printf("\nGiven string is accepted\n");
     else
         printf("\nGiven string is not accepted\n");
 
     return 0;
 }
-
