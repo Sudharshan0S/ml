@@ -118,8 +118,6 @@ void computeFollow(char c, int idx)
                 else
                 {
                     int lhsIdx = findIndex(productions[i][0]);
-
-                    /* Added idx check */
                     if (lhsIdx != idx)
                     {
                         for (int k = 0; follow[lhsIdx][k]; k++)
