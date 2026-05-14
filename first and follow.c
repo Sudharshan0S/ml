@@ -115,6 +115,19 @@ void computeFollow(char c, int idx)
                             add(follow[idx], first[nextIdx][k]);
                     }
                 }
+                else
+                {
+                    int lhsIdx = findIndex(productions[i][0]);
+
+                    /* Added idx check */
+                    if (lhsIdx != idx)
+                    {
+                        for (int k = 0; follow[lhsIdx][k]; k++)
+                        {
+                            add(follow[idx], follow[lhsIdx][k]);
+                        }
+                    }
+                }
             }
         }
     }
@@ -128,7 +141,15 @@ int main()
     printf("Enter productions:\n");
 
     for (int i = 0; i < n; i++)
+    {
         scanf("%s", input[i]);
+
+        if (!isupper(input[i][0]))
+        {
+            printf("invalid since the expression head should be non terminal\n");
+            i--;
+        }
+    }
 
     for (int i = 0; i < n; i++)
     {
