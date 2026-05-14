@@ -1,200 +1,113 @@
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 
-int i, top = -1;
-char a[10];
+char stack[50];
+int top = -1;
 
-void error()
-{
-    printf("Symbol Error");
-}
-
-void push(char k[3])
-{
-    for (i = 0; k[i] != '\0'; i++)
-    {
-        if (top < 9)
-        {
-            a[++top] = k[i];
-        }
+/* Push string into stack */
+void push(char str[]) {
+    for (int i = strlen(str) - 1; i >= 0; i--) {
+        if (str[i] != 'e')
+            stack[++top] = str[i];
     }
 }
 
-char TOS()
-{
-    return a[top];
-}
-
-void pop()
-{
+void pop() {
     if (top >= 0)
-    {
-        a[top--] = '\0';
-    }
+        top--;
 }
 
-void display()
-{
-    for (i = 0; i <= top; i++)   // Updated: <= top instead of < top
-    {
-        printf("%c", a[i]);
-    }
+void displayStack() {
+    for (int i = 0; i <= top; i++)
+        printf("%c", stack[i]);
 }
 
-void display1(char p[20], int m)
-{
-    int l;
-
+void displayInput(char input[], int pos) {
     printf("\t");
-
-    for (l = m; p[l] != '\0'; l++)
-    {
-        printf("%c", p[l]);
-    }
+    for (int i = pos; input[i] != '\0'; i++)
+        printf("%c", input[i]);
 }
 
-char *strrev_custom(char *str)   // Updated: renamed from strrev
-{
-    int len = strlen(str);
+int main() {
 
-    for (int i = 0, j = len - 1; i < j; i++, j--)
-    {
-        char temp = str[i];
-        str[i] = str[j];
-        str[j] = temp;
-    }
+    char input[50];
+    char table[5][6][10] = {
 
-    return str;
-}
-
-int main()
-{
-    char ip[20], st, an;
-    int ir, ic, j = 0;
-
-    char t[5][6][10] =
-    {
-        {"", "$", "TH", "", "TH", "$"},
-        {"TH", "$", "", "e", "e", "$"},
-        {"", "$", "FU", "", "FU", "$"},
-        {"e", "e", "", "", "", "$"},
-        {"", "$", "(E)", "", "", "$"}
+        {"TH", "$", "TH", "$", "TH", "$"},   // E
+        {"+TH", "$", "e", "e", "$", "e"},    // H
+        {"FU", "$", "FU", "$", "FU", "$"},   // T
+        {"e", "*FU", "e", "e", "$", "e"},    // U
+        {"$", "$", "(E)", "$", "i", "$"}     // F
     };
 
-    printf("Enter any string appended with $ : ");
-    fgets(ip, sizeof(ip), stdin);
+    char nonTerminals[] = {'E', 'H', 'T', 'U', 'F'};
 
-    ip[strcspn(ip, "\n")] = '\0';
+    printf("Enter input string (append with $): ");
+    scanf("%s", input);
 
-    printf("Stack\tInput\tOutput\n\n");
+    push("$");
+    push("E");
 
-    push("$E");
+    printf("\nStack\tInput\tOutput\n\n");
 
-    display();
+    int i = 0;
 
-    printf("\n");
+    while (top >= 0) {
 
-    for (j = 0; ip[j] != '\0';)
-    {
-        an = ip[j];
+        displayStack();
+        displayInput(input, i);
 
-        if (TOS() == an)
-        {
+        char st = stack[top];
+        char in = input[i];
+
+        /* Convert identifiers to i */
+        if ((in >= 'a' && in <= 'z') ||
+            (in >= 'A' && in <= 'Z'))
+            in = 'i';
+
+        if (st == in) {
             pop();
-
-            display();
-            display1(ip, j + 1);
-
-            printf("\tpop\n");
-
-            j++;
-
+            i++;
+            printf("\tPop\n");
             continue;
         }
 
-        st = TOS();
+        int row = -1, col = -1;
 
-        if (st == 'E')
-            ir = 0;
-        else if (st == 'H')
-            ir = 1;
-        else if (st == 'T')
-            ir = 2;
-        else if (st == 'U')
-            ir = 3;
-        else if (st == 'F')
-            ir = 4;
-        else
-        {
-            error();
-            break;
-        }
-
-        if (an == 'i')
-            ic = 0;
-        else if (an == '+')
-            ic = 1;
-        else if (an == '*')
-            ic = 2;
-        else if (an == '(')
-            ic = 3;
-        else if (an == ')')
-            ic = 4;
-        else if (an == '$')
-            ic = 5;
-        else
-        {
-            error();
-            break;
-        }
-
-        strcpy(ip, ip); // Updated: dummy safe line to preserve flow
-
-        if (strcmp(t[ir][ic], "") != 0)
-        {
-            pop();
-
-            char temp[20];
-
-            strcpy(temp, t[ir][ic]);
-
-            strrev_custom(temp);
-
-            if (temp[0] != 'e')
-            {
-                push(temp);
+        for (int r = 0; r < 5; r++) {
+            if (nonTerminals[r] == st) {
+                row = r;
+                break;
             }
-
-            display();
-
-            display1(ip, j);
-
-            printf("\t%c->%s\n", st, t[ir][ic]);
         }
-        else
-        {
-            error();
+
+        if (in == '+') col = 0;
+        else if (in == '*') col = 1;
+        else if (in == '(') col = 2;
+        else if (in == ')') col = 3;
+        else if (in == 'i') col = 4;
+        else if (in == '$') col = 5;
+
+        if (row == -1 || col == -1 || strcmp(table[row][col], "$") == 0) {
+            printf("\nSyntax Error\n");
+            return 0;
+        }
+
+        pop();
+
+        push(table[row][col]);
+
+        printf("\t%c -> %s\n", st, table[row][col]);
+
+        if (stack[top] == '$' && input[i] == '$')
             break;
-        }
-
-        if (TOS() == '$' && an == '$')
-        {
-            pop();
-            break;
-        }
-
-        if (TOS() == '$')
-        {
-            error();
-            break;
-        }
     }
 
-    if (top == -1)
-        printf("\nGiven string accepted\n");
+    if (stack[top] == '$' && input[i] == '$')
+        printf("\nGiven string is accepted\n");
     else
-        printf("\nGiven string not accepted\n");
+        printf("\nGiven string is not accepted\n");
 
     return 0;
 }
+
