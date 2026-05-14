@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-
+#include <ctype.h>
 #define MAX 10
 #define LEN 50
 
@@ -138,9 +138,15 @@ int main()
     printf("Enter productions (e.g., A->Aa|b):\n");
 
     for (int i = 0; i < n; i++)
+{
+    scanf("%s", prod[i]);
+
+    if (!isupper(prod[i][0]))
     {
-        scanf("%s", prod[i]);
+        printf("Invalid Production: LHS must be Non-Terminal\n");
+        i--;
     }
+}
 
     eliminateLeftRecursion();
 
