@@ -1,65 +1,41 @@
 #include <stdio.h>
-#include <ctype.h>
 #include <string.h>
+#include <ctype.h>
 
-#define MAX 200
+char op[100];
+char val[100][20];
 
-char opstack[MAX];
-char valstack[MAX][20];
+int top1 = -1, top2 = -1, temp = 1;
 
-int topOp = -1, topVal = -1;
-int tempCount = 1;
-
-int precedence(char op)
+int prec(char ch)
 {
-    if (op == '+' || op == '-')
+    if (ch == '+' || ch == '-')
         return 1;
 
-    if (op == '*' || op == '/')
+    if (ch == '*' || ch == '/')
         return 2;
 
     return 0;
 }
 
-void pushOp(char op)
-{
-    opstack[++topOp] = op;
-}
-
-char popOp()
-{
-    return opstack[topOp--];
-}
-
-void pushVal(char *val)
-{
-    strcpy(valstack[++topVal], val);
-}
-
-void popVal(char *val)
-{
-    strcpy(val, valstack[topVal--]);
-}
-
 void generate()
 {
-    char op = popOp();
+    char a[20], b[20], t[20];
+    char opr = op[top1--];
 
-    char op1[20], op2[20], temp[20];
+    strcpy(b, val[top2--]);
+    strcpy(a, val[top2--]);
 
-    popVal(op2);
-    popVal(op1);
+    sprintf(t, "t%d", temp++);
 
-    sprintf(temp, "t%d", tempCount++);
+    printf("%s = %s %c %s\n", t, a, opr, b);
 
-    printf("%s = %s %c %s\n", temp, op1, op, op2);
-
-    pushVal(temp);
+    strcpy(val[++top2], t);
 }
 
 int main()
 {
-    char exp[MAX];
+    char exp[100];
 
     printf("Enter Expression: ");
     scanf("%s", exp);
@@ -70,38 +46,37 @@ int main()
 
         if (isalnum(ch))
         {
-            char operand[2] = {ch, '\0'};
-            pushVal(operand);
+            val[++top2][0] = ch;
+            val[top2][1] = '\0';
         }
+
         else if (ch == '(')
         {
-            pushOp(ch);
+            op[++top1] = ch;
         }
+
         else if (ch == ')')
         {
-            while (opstack[topOp] != '(')
-            {
+            while (op[top1] != '(')
                 generate();
-            }
 
-            popOp(); // Updated: remove '('
+            top1--;
         }
+
         else
         {
-            while (topOp != -1 &&
-                   precedence(opstack[topOp]) >= precedence(ch))
+            while (top1 != -1 &&
+                   prec(op[top1]) >= prec(ch))
             {
                 generate();
             }
 
-            pushOp(ch);
+            op[++top1] = ch;
         }
     }
 
-    while (topOp != -1)
-    {
+    while (top1 != -1)
         generate();
-    }
 
     return 0;
 }
